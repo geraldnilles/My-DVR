@@ -26,6 +26,29 @@ Create my own DVR based on Python
 * Create a "Name" based recording shedule
 * Remove Commercials from recordings (Copy MythTV' CommFlag program)
 
+# Processes
+
+## Command Center
+This will be the main process that is launched first.  This process will host a Unix Socket (based on the asyncore class) and will spawn all of the other processes.  Additionally, the Command Center will mantain the centra database used by the other subprocesses
+
+## WebUI Server
+The User will interact with this process.  Various DVR commands will be issued
+
+## Recorder
+This process will be spawned by the Command Center when a stream needs to be recorded.  THere may be multiple recorder processes running simultaniously.  
+
+## Transcoder
+This process will transcode MPEG2 video files to H264 once recording is complete.  For now, only 1 trancoder process will run at a given time.  
+
+## Device Manager
+This process will periodically look for tuners as well as report back the status of each tuner.
+
+## Listing Manager
+This process will fetch the latest listing information from the internet and schedule recordings accordingly
+
+## Commercial Flagger
+This process will scan video files and look for commericals.  This info will be used to delete commericals from the video during transcoding.  
+
 # Recoding
 Basic Command
 
