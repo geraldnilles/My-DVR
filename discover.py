@@ -1,24 +1,7 @@
 
 import ctypes
 
-#----------------
-# Define C Structs
-#---------------
 
-# Devcie Struct for HDHomeRun Discover function
-class hdhomerun_discover_device(ctypes.Structure):
-	_fields_ = [
-			("ip_addr",ctypes.c_long),
-			("device_id",ctypes.c_long),
-			("device_type",ctypes.c_long),
-			("tuner_count",ctypes.c_char)
-		]
-
-#--------------
-# Define C Library
-#-------------
-
-libhdhomerun = ctypes.CDLL("libhdhomerun.so")
 
 
 ## Returns a List of Device IDs
