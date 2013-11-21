@@ -6,7 +6,7 @@ import libcommand_center as libcc
 MPEG_FOLDER = "/mnt/raid/Recordings/.mpeg/"
 
 def record(device_id, tuner_number, legnth, filename):
-	tempname = libcc.RECORD_MPEG_FOLDER+uuid.uuid().digest()
+	tempname = libcc.RECORD_MPEG_FOLDER+str(uuid.uuid1())
 
 	libcc.send_recv({
 		"source":"recorder",
@@ -18,8 +18,7 @@ def record(device_id, tuner_number, legnth, filename):
 				deviceID,
 				"save",
 				"/tumer"+str(tuner_number),
-				tempname]
-			)
+				tempname])
 
 	# Keep track of the start time.
 	start_time = time.time()
@@ -54,6 +53,37 @@ def record(device_id, tuner_number, legnth, filename):
 
 if __name__ == "__main__":
 	# Parse Arguments 
+	parser = argparse.ArgumentParser(description=
+			"Record Stream from HDHomeRun Prime Tuner")
+	parser.add_argument("--id",help="HDHomeRune Device ID Hex String")
+	parser.add_argument("--tuner",
+				help="Tuner Number to use", 
+				type=int,
+				default=0)
+	parser.add_argument("--length",
+				help="Length of recording (in seconds)",
+				type=int,
+				default=60*60)
+	parser.add_argument("--outfile",
+				help="Output MPEG file name")
+
+	args = parser.parse_args()
+
+	# TODO Verify the ID hex value is correct
+	if len(args.id) != 8:
+		print "Error! Tuner ID value is not the correct length."
+		parser.print_usage()
+		exit()
+
+	for x in args.id:
+		if x not in [	"A","B","C","D","E","F",
+				"a","b","c","d","e","f",
+				"1","2","3","4","5","6","7","8","9","0"]:
+			print "Error! Tuner ID is not a Hex value"
+			parser.pring_usage()
+			exit()
 	
-	# Record
-	record(device_id, tuner_number ,length,filename)
+
+	# Record the Stream
+	record(args.id, args.tuner , args.length, args.outfile)
+

@@ -23,7 +23,8 @@ The first version will be a basic recording app that records at a given time M-F
     * Starts the Recorder Process when needed
 * Device Manager
     * Discovers Tuners on the current network and sends them back to the Control Center
-
+* CLI Interface
+    * Allow user to tweak the command center
 
 # Processes
 
