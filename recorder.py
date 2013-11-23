@@ -1,39 +1,50 @@
+#!/usr/bin/env python
+
 import os
 import uuid
-import time.sleep
+import time
 import libcommand_center as libcc
+import argparse
+import subprocess
 
-MPEG_FOLDER = "/mnt/raid/Recordings/.mpeg/"
 
-def record(device_id, tuner_number, legnth, filename):
+def record(device_id, tuner_number, length, filename):
 	tempname = libcc.RECORD_MPEG_FOLDER+str(uuid.uuid1())
-
+	
+	"""
 	libcc.send_recv({
 		"source":"recorder",
 		"message":"Recording Started on Tuner "+str(tuner_number)
 		})
+	"""
+	print "Recording Started"
 
 	proc = subprocess.Popen([
 				"hdhomerun_config",
-				deviceID,
+				device_id,
 				"save",
-				"/tumer"+str(tuner_number),
-				tempname])
+				"/tuner"+str(tuner_number),
+				tempname],
+			stdout=subprocess.PIPE,
+			stdin=subprocess.PIPE,
+			stderr=subprocess.PIPE)
 
 	# Keep track of the start time.
 	start_time = time.time()
 	# Loop for as long as the process is alive
 	while proc.poll() == None:
 		# Check if the recording is complete
-		if time.time()-starttime > length:
+		if time.time()-start_time > length:
 			# Report Completion to Command Center
 			# Send the Kill signal
 			proc.kill() # or proc.terminate?
-			libcc.send_recv({
+			"""libcc.send_recv({
 				"source":"recorder",
 				"message":"Recording Finished on Tuner "
 					+str(tuner_number)
 				})
+			"""
+			print "Recording Finished"
 			break # Stop the loop
 	
 		# Read the STDOUT
@@ -44,6 +55,7 @@ def record(device_id, tuner_number, legnth, filename):
 		#	proc.terminate()
 		#	break
 		time.sleep(5)
+		print int((time.time()-start_time)/length*100),"percent"
 
 	# Wait for the proc to finish up
 	proc.wait()
@@ -51,21 +63,37 @@ def record(device_id, tuner_number, legnth, filename):
 	# Move from Temp directory to Recordings directory
 	os.rename(tempname,libcc.RECORD_MPEG_FOLDER+filename)
 
+def change_channel(device_id, tuner_number, channel):
+	proc = subprocess.Popen([	"hdhomerun_config",
+				device_id,
+				"set",
+				"/tuner"+str(tuner_number)+"/vchannel",
+				str(channel)])
+
+	proc.wait()
+	return proc.poll()
+
 if __name__ == "__main__":
 	# Parse Arguments 
 	parser = argparse.ArgumentParser(description=
 			"Record Stream from HDHomeRun Prime Tuner")
-	parser.add_argument("--id",help="HDHomeRune Device ID Hex String")
-	parser.add_argument("--tuner",
+	parser.add_argument("-i","--id",
+				help="HDHomeRune Device ID Hex String",
+				required=True)
+	parser.add_argument("-t","--tuner",
 				help="Tuner Number to use", 
 				type=int,
 				default=0)
-	parser.add_argument("--length",
+	parser.add_argument("-l","--length",
 				help="Length of recording (in seconds)",
 				type=int,
 				default=60*60)
-	parser.add_argument("--outfile",
-				help="Output MPEG file name")
+	parser.add_argument("-c","--channel",
+				help="Virtual Channel to Record",
+				type=int)
+	parser.add_argument("-o","--outfile",
+				help="Output MPEG file name",
+				required=True)
 
 	args = parser.parse_args()
 
@@ -80,10 +108,18 @@ if __name__ == "__main__":
 				"a","b","c","d","e","f",
 				"1","2","3","4","5","6","7","8","9","0"]:
 			print "Error! Tuner ID is not a Hex value"
-			parser.pring_usage()
+			parser.print_usage()
 			exit()
 	
 
+	# Check if a channel is given
+	if args.channel != None:
+		ret = change_channel(args.id,args.tuner,args.channel)
+		if ret != 0:
+			print "There was an issue changing the channel"		
+			exit(-1)
+
 	# Record the Stream
 	record(args.id, args.tuner , args.length, args.outfile)
+
 
