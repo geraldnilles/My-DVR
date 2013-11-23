@@ -46,9 +46,8 @@ TRANSCODE_OUT_FOLDER = "/mnt/raid/Recordings/"
 TRANSCODE_CONTAINER = "mp4"
 TRANSCODE_TEMP_FILENAME = TRANSCODE_OUT_FOLDER+".temp."+TRANSCODE_CONTAINER
 TRANSCODE_TIMEOUT = 60*60*2 # 2 hours
-
-TRANSCODE_COMMAND = [	"avconv", # Or "ffmpeg"
-			"-c:a", "libfdk_aac", 	# AAC Audio Codec
+TRANSCODE_COMMAND = "avconv" # Or FFMPEG
+TRANSCODE_ARGS_LIST = [	"-c:a", "libfdk_aac", 	# AAC Audio Codec
 			"-ac","2",		# Stereo
 			"-vbr","3",		# Set VBR quality (~ 128kbps)
 			"-c:v","libx264",	# H264 Video Codec

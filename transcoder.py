@@ -1,5 +1,10 @@
+#!/usr/bin/env python
+
 import libcommand_center as libcc
 import random
+import subprocess
+import os
+import time
 
 def find_mpeg2():
 	# Get a list of all files i nthe IN_FOLDER
@@ -7,7 +12,7 @@ def find_mpeg2():
 	# Grab the .mpeg files from this list
 	mpegs = []
 	for r in recordings:
-		if rsplit(r,".")[-1] == "mpeg":
+		if r.rsplit(".",1)[-1] == "mpeg":
 			mpegs.append(r)
 	
 	# Randomply pick an MPEG
@@ -18,30 +23,29 @@ def find_mpeg2():
 
 def convert_to_h264(fn):
 	# If Temporary file exists, delete it
-	if os.exists(libcc.TRANSCODE_TEMP_FILENAME):
+	if os.path.exists(libcc.TRANSCODE_TEMP_FILENAME):
 		os.remove(libcc.TRANSCODE_TEMP_FILENAME)
 
 	# Get Video Length in seconds
 
 	# Get Base filename
-	base_fn = rsplit(fn,".",1)[0]
+	base_fn = fn.rsplit(".",1)[0]
 	# Start the Transcoding
-	proc = subprocess.Popen(libcc.TRANSCODE_COMMAND+
-				[
-					"-i",libcc.RECORD_MPEG_FOLDER+fn,
-					libcc.TRANSCODE_TEMP_FILENAME
-				]
+	proc = subprocess.Popen([libcc.TRANSCODE_COMMAND,
+				"-i",libcc.RECORD_MPEG_FOLDER+fn]+
+				libcc.TRANSCODE_ARGS_LIST+
+				[libcc.TRANSCODE_TEMP_FILENAME	]
 			)
 
 	start_time = time.time()
-	while( time.time() < start_time + TIMEOUT):
+	while( time.time() < start_time + libcc.TRANSCODE_TIMEOUT):
 		ret = proc.poll()
 		if ret != None:
 			# TODO Check if Return code is successful
 			os.remove(libcc.RECORD_MPEG_FOLDER+fn)
 			os.rename(libcc.TRANSCODE_TEMP_FILENAME,
 				libcc.TRANSCODE_OUT_FOLDER+base_fn+"."
-				+libcc.CONTAINER)
+				+libcc.TRANSCODE_CONTAINER)
 			return
 		
 		# Send update to command center
@@ -68,9 +72,11 @@ def loop_forever():
 		filename = find_mpeg2()
 		# If nothing, wait for a minute
 		if filename == None:
+			print "No MPEGs to transcode"
 			time.sleep(60)
 		else:
 			# Convert the MPEG to H264
+			print filename
 			convert_to_h264(filename)
 			time.sleep(10)
 
