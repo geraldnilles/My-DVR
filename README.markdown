@@ -49,4 +49,29 @@ This process will fetch the latest listing information from the internet and sch
 ## Commercial Flagger
 This process will scan video files and look for commericals.  This info will be used to delete commericals from the video during transcoding.  
 
- 
+# Databases
+
+## Rules
+A list of human readable rules used to automatically schedule new events.  
+
+* title
+    * RegEx matching the title
+* description
+    * RegEx matching the description
+* new
+    * True if only new shows should be schedules
+* channel
+    * A list of channels you are allowed to record on
+
+## Schedule
+Contains a list of recording events. Each event will have the following key/values
+
+* uid
+    * A unique id given to each event 
+* name
+    * The Name of the recording
+* time
+    * Start Time of the recording (in Unix time... seconds since 1/1/1970 in UTC)
+* length
+    * Length of recording (in seconds)
+
